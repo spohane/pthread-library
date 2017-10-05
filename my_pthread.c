@@ -2,19 +2,32 @@
 // Author:	Yujie REN
 // Date:	09/23/2017
 
-// name:
-// username of iLab:
-// iLab Server:
+// name: Joshua B. Kim
+// username of iLab: jbk91
+// iLab Server: kill.cs.rutgers.edu
 
 #include "my_pthread_t.h"
 
 /* create a new thread */
 int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*function)(void*), void * arg) {
-	return 0;
-};
 
-/* give CPU pocession to other user level threads voluntarily */
-int my_pthread_yield() {
+	tcb * tstruct = (tcb *)malloc(sizeof(THREAD_SIZE));
+	ucontext_t *child, parent;
+	child = tstruct->ucs;	
+
+	getcontext(child);
+
+	child->uc_stack.ss_sp = malloc(THREAD_SIZE);
+	child->uc_stack.ss_size = THREAD_SIZE;
+	child->uc_stack.ss_flags = 0;
+	if (child->uc_stack.ss_sp == 0) {
+		fprintf(stderr, "error: malloc count not allocate the stack\n");
+		exit(1);
+	}
+
+	makecontext(child, function, arg);
+	swapcontext(child, &parent);
+
 	return 0;
 };
 

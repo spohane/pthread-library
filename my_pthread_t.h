@@ -2,25 +2,31 @@
 // Author:	Yujie REN
 // Date:	09/23/2017
 
-// name:
-// username of iLab:
-// iLab Server: 
+// name: Joshua B. Kim
+// username of iLab: jbk91
+// iLab Server: kill.cs.rutgers.edu
 #ifndef MY_PTHREAD_T_H
 #define MY_PTHREAD_T_H
 
 #define _GNU_SOURCE
+#define THREAD_SIZE 65536
+
 
 /* include lib header files that you need here: */
 #include <unistd.h>
+#include <ucontext.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+
 
 typedef uint my_pthread_t;
 
 typedef struct threadControlBlock {
-	/* add something here */
+
+	ucontext_t * ucs;
 } tcb; 
 
 /* mutex struct definition */
