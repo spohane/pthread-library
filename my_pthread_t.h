@@ -21,11 +21,18 @@
 #include <stdlib.h>
 #include <signal.h>
 
+ucontext_t Main; 
 
 typedef uint my_pthread_t;
 
-typedef struct threadControlBlock {
+typedef enum State {
+	RUNNING, READY, WAIT, START, DONE
+} state;
 
+typedef struct threadControlBlock {
+	
+	my_pthread_t tid;
+	state status;
 	ucontext_t * ucs;
 } tcb; 
 
@@ -36,8 +43,20 @@ typedef struct my_pthread_mutex_t {
 
 /* define your data structures here: */
 
-// Feel free to add your own auxiliary data structures
+typedef struct threadReadyQueue {
 
+	tcb * thread_block;
+	struct threadReadyQueue * link;
+} trq;
+
+
+/* Custom Function Declarations: */
+
+/* initializes the internal structures of the library */
+void initThreadLibrary();
+
+/* inserts tcb into the ready queue */
+void insert(tcb *block);
 
 /* Function Declarations: */
 

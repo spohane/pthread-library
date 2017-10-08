@@ -8,25 +8,53 @@
 
 #include "my_pthread_t.h"
 
+trq *head, *tail;
+
+/* initializes the internal structure of the thread library
+ * should be called before using any other thread functions 
+ * from my_pthread_t.h
+ */
+
+void initThreadLibrary() {
+
+
+}
+
+/* inserts tcb into the ready queue */
+void insert(tcb *block) {
+
+	trq *tmp = (trq *)malloc(sizeof(trq));
+	tmp->thread_block = block;
+	tmp->link = NULL;
+	if (tail == NULL) {
+		head = tail = tmp;
+	} else {
+		tail->link = tmp;
+		tail = tmp;
+	}
+
+}
+
 /* create a new thread */
 int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*function)(void*), void * arg) {
 
-	tcb * tstruct = (tcb *)malloc(sizeof(THREAD_SIZE));
-	ucontext_t *child, parent;
-	child = tstruct->ucs;	
-
-	getcontext(child);
-
-	child->uc_stack.ss_sp = malloc(THREAD_SIZE);
-	child->uc_stack.ss_size = THREAD_SIZE;
-	child->uc_stack.ss_flags = 0;
-	if (child->uc_stack.ss_sp == 0) {
-		fprintf(stderr, "error: malloc count not allocate the stack\n");
+	tcb * thread_block = (tcb *)malloc(sizeof(THREAD_SIZE));
+	getcontext(thread_block->ucs);
+	thread_block->ucs->uc_link = 0;
+	thread_block->ucs->uc_stack.ss_sp = malloc(THREAD_SIZE);
+	thread_block->ucs->uc_stack.ss_size = THREAD_SIZE;
+	thread_block->ucs->uc_stack.ss_flags = 0;
+	if (thread_block->ucs->uc_stack.ss_sp == 0) 
+	{
+		fprintf(stderr, "error: malloc could not allocate the stack\n");
 		exit(1);
 	}
+	else 
+	{
+		makecontext(thread_block->ucs, (void *) &function, 0);
+		swapcontext(thread_block->ucs, &Main);
+	}	
 
-	makecontext(child, function, arg);
-	swapcontext(child, &parent);
 
 	return 0;
 };
