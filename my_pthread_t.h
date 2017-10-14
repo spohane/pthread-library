@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
-ucontext_t Main; 
+//ucontext_t Main; 
 
 typedef uint my_pthread_t;
 
@@ -34,7 +34,7 @@ typedef struct threadControlBlock {
 	
 	my_pthread_t tid;
 	state status;
-	ucontext_t * ucs;
+	ucontext_t ucs;
 } tcb; 
 
 /* mutex struct definition */

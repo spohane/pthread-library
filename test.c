@@ -7,10 +7,11 @@ void *f1(void *arg) {
 
 int main(int argc, char ** argv)
 {
-
-  my_pthread_t thread;
-  my_pthread_create(&thread, NULL, f1, NULL); 
-
+  int testSize=10;
+  my_pthread_t thread[testSize];
+  for(int i=0;i<testSize;i++){
+    my_pthread_create(&thread[i], NULL, f1, NULL); 
+  }
   return 0;
 
 }
