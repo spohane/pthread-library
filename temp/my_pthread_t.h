@@ -47,15 +47,20 @@ typedef struct threadReadyQueue {
 	struct threadReadyQueue *next;
 } trq;
 
-trq *myQueue;
+typedef struct threadWaitQueue {
+	my_pthread_t *thread_block;
+	struct threadWaitQueue *next;
+} twq;
 /* Custom Function Declarations: */
 
 /* initializes the internal structures of the library */
 void initThreadLibrary();
 
 /* inserts tcb into the ready queue */
-void insert(my_pthread_t *thread);
+void enqueueThread(my_pthread_t *thread);
 
+/* removes specified tcb from the queue */
+my_pthread_t* dequeueThread();
 /* Function Declarations: */
 
 /* create a new thread */

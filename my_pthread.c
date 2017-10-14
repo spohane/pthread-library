@@ -8,7 +8,18 @@
 
 #include "my_pthread_t.h"
 
-trq *head, *tail;
+static tq *readyQueue;
+static tq *waitQueue;
+
+/* function for the scheduler, which is called in initThreadLibrary() */
+
+int scheduler(void) {
+
+
+
+
+  return 0;
+}
 
 /* initializes the internal structure of the thread library
  * should be called before using any other thread functions 
@@ -17,24 +28,57 @@ trq *head, *tail;
 
 void initThreadLibrary() {
 
+	readyQueue = (tq *)malloc(sizeof(tq));
+	waitQueue = (tq *)malloc(sizeof(tq));
+	readyQueue->head = readyQueue->tail = 
+	waitQueue->head = waitQueue->tail = NULL;
+	waitQueue->numOfThreads = readyQueue->numOfThreads = 0;
+	scheduler();
 
 }
 
-/* inserts tcb into the ready queue */
-void insert(tcb *block) {
+/* inserts tcb into the queue */
+void enqueueThread(tq *queue, tcb *block) {
 
-	trq *tmp = (trq *)malloc(sizeof(trq));
+	tqn *tmp = (tqn *)malloc(sizeof(tqn));
 	tmp->thread_block = block;
 	tmp->link = NULL;
-	if (tail == NULL) {
-		head = tail = tmp;
+
+	if (queue->numOfThreads == 0) {
+		queue->head = queue->tail = tmp;
+		queue->numOfThreads++;
+		return;
 	} else {
-		tail->link = tmp;
-		tail = tmp;
+		queue->tail->link = tmp;
+		queue->tail = tmp;
+		queue->numOfThreads++;
+		return;
 	}
 
 }
 
+/* removes the first tcb block from the queue 
+ * returns the first tcb block, or NULL if the
+ * queue is empty
+ */
+
+tqn* dequeueThread(tq *queue) {
+
+	if (queue->numOfThreads == 0) {
+		return NULL;
+	} else if (queue->numOfThreads == 1) {
+		tqn *tmp = queue->head;
+		queue->head = queue->tail = NULL;
+		queue->numOfThreads--;
+		return tmp;
+	} else {
+		tqn *tmp = queue->head;
+		queue->head = queue->head->link;
+		queue->numOfThreads--;
+		return tmp;
+	}
+	
+}
 /* create a new thread */
 int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*function)(void*), void * arg) {
 

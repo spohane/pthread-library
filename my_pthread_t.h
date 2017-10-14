@@ -10,7 +10,8 @@
 
 #define _GNU_SOURCE
 #define THREAD_SIZE 65536
-
+#define READY 0
+#define WAIT 1
 
 /* include lib header files that you need here: */
 #include <unistd.h>
@@ -26,7 +27,7 @@ ucontext_t Main;
 typedef uint my_pthread_t;
 
 typedef enum State {
-	RUNNING, READY, WAIT, START, DONE
+	RUN, RDY, WAITING, STARTED, DONE
 } state;
 
 typedef struct threadControlBlock {
@@ -43,20 +44,28 @@ typedef struct my_pthread_mutex_t {
 
 /* define your data structures here: */
 
-typedef struct threadReadyQueue {
+typedef struct threadQueueNode {
 
 	tcb * thread_block;
-	struct threadReadyQueue * link;
-} trq;
+	struct threadQueueNode *link;
+} tqn;
 
+typedef struct threadQueue {
+		
+	unsigned int numOfThreads;
+	struct threadQueueNode *head, *tail; 
+} tq;
 
 /* Custom Function Declarations: */
 
 /* initializes the internal structures of the library */
 void initThreadLibrary();
 
+/* scheduler */
+int scheduler(void);
+
 /* inserts tcb into the ready queue */
-void insert(tcb *block);
+void insert(tq *queue, tcb *block);
 
 /* Function Declarations: */
 

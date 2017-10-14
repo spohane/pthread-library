@@ -8,7 +8,9 @@
 
 #include "my_pthread_t.h"
 
-trq *head, *tail;
+trq *tail;
+static trq *readyQueue;
+static twq *waitQueue;
 
 /* initializes the internal structure of the thread library
  * should be called before using any other thread functions 
@@ -17,22 +19,46 @@ trq *head, *tail;
 
 void initThreadLibrary() {
 
-
+	readyQueue = NULL;
+	waitQueue = NULL;
 }
 
 /* inserts tcb into the ready queue */
-void insert(my_pthread_t *thread) {
+void enqueueThread(my_pthread_t *thread) {
 
 	trq *tmp = (trq *)malloc(sizeof(trq));
 	tmp->thread_block = thread;
 	tmp->next = NULL;
-	if (tail == NULL) {
-		head = tail = tmp;
-	} else {
-		tail->next = tmp;
-		tail = tmp;
+	if (readyQueue == NULL) {
+		readyQueue = tmp;
 	}
 
+	readyQueue = (trq *)malloc(sizeof(trq));
+	readyQueue->thread_block = thread;
+	readyQueue->next = NULL;
+			
+}
+
+/* removes specified tcb from the queue
+ * i'm most likely going to have to fix 
+ * this function since it doesn't really
+ * perform in the context that we want it
+ * to. */
+  
+my_pthread_t* dequeueThread() {
+
+	my_pthread_t *tmp;
+	tmp = head;
+	if (tmp == NULL)
+	{
+		head = tail = NULL;
+	}
+	else 
+	{
+		head = head->next;
+		free(tmp);
+	}	
+	
 }
 
 /* create a new thread */
@@ -49,28 +75,35 @@ int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*func
 	thread->ucs.uc_stack.ss_flags = 0;
 	if (thread->ucs.uc_stack.ss_sp == 0) 
 	{
-		fprintf(stderr, "error: malloc could not allocate the stack\n");
+		fprintf(stderr, "error: malloc couldn't allocate the stack\n");
 		exit(1);
 	}
 	else 
 	{
-	  makecontext(&thread->ucs, (void (*) (void))function, 1,arg);
+	  makecontext(&thread->ucs, (void (*) (void))function, 1, arg);
 	  
 	  //add thread to queue
-	  trq *queue=malloc(sizeof(trq));
-	  queue->thread_block=thread;
-	  queue->next=NULL;
-	  if(myQueue==NULL)
-	    myQueue=queue;
-	  else{
-	    queue->next=myQueue;
+	  
+	  enqueueThread(thread);
+	  
+	  //readyQueue=(trq *)malloc(sizeof(trq));
+	  //readyQueue->thread_block=thread;
+	  //readyQueue->next=NULL;
+	  //if(readyQueue==NULL) 
+	  //{
+	    //readyQueue=readyQueue;
+	    //head = tail = readyQueue;
+	  //} 
+	  //else
+	  //{
+	    //readyQueue->next=readyQueue;
 	    /*while(myQueue->next!=NULL){
 	      myQueue=myQueue->next;
 	      }*/
 	    //myQueue->next=queue;
 	    
-	    swapcontext(&thread->ucs,&queue->next->thread_block->ucs);
-	  }
+	    swapcontext(&thread->ucs,&readyQueue->next->thread_block->ucs);
+	  //}
 	}	
 	return 0;
 };

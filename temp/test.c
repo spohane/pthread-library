@@ -11,6 +11,7 @@ void *f2(void *arg) {
 
 int main(int argc, char ** argv)
 {
+  initThreadLibrary();
   int argg=1;
 
   my_pthread_t thread,thread2;
