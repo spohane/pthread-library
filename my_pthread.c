@@ -10,22 +10,13 @@
 
 static tq *runQueue;
 static tq *waitQueue;
-<<<<<<< HEAD
-
-=======
 ucontext_t Main;
 tcb *cur_thread;
 /* function for the scheduler, which is called in initThreadLibrary() */
-
-int scheduler(void) {
->>>>>>> 7dcfd0a1bdea0f39fe04e1a861a5daa24a1dd78b
-
 /* scheduler signal,function */
 int scheduler() {
- 
   // thinking processe behind this was if the number of threads in
   // the runQueue is not 0, there are threads that need to start running.
-
   if (runQueue->numOfThreads != 0) {
 	// so we dequeue the first thread from the runQueue
 	// and then set the necessary signal actions when the
@@ -36,15 +27,12 @@ int scheduler() {
 	//
 	// Also, I know swapcontext, brings it back to the previous context, but how can we go back 
 	// to main when we don't have a reference to it. Maybe, I interpretted the readings incorrectly
-
 	tqn *run = dequeueThread(runQueue);
   	sigaction(SIGPROF, run->thread_block->act, run->thread_block->oact);
 	setitimer(ITIMER_PROF, run->thread_block->it, NULL);
 	setcontext(run->thread_block->ucs);	
   } 
-
   return 0;
-
 }
 
 void timeHandler() {
@@ -111,17 +99,8 @@ tqn * dequeueThread(tq *queue) {
 }
 /* create a new thread */
 int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*function)(void*), void * arg) {
-
-<<<<<<< HEAD
+	//init tcb
 	tcb *thread_block = (tcb *)malloc(sizeof(THREAD_SIZE));
-	getcontext(thread_block->ucs);
-	thread_block->ucs->uc_link = 0;
-	thread_block->ucs->uc_stack.ss_sp = malloc(THREAD_SIZE);
-	thread_block->ucs->uc_stack.ss_size = THREAD_SIZE;
-	thread_block->ucs->uc_stack.ss_flags = 0;
-	if (thread_block->ucs->uc_stack.ss_sp == 0) 
-=======
-	tcb * thread_block = (tcb *)malloc(sizeof(THREAD_SIZE));
 	getcontext(&thread_block->ucs);
 	//---change this to my_pthread_exit() i think?
 	thread_block->ucs.uc_link = &Main;
@@ -130,18 +109,12 @@ int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*func
 	thread_block->ucs.uc_stack.ss_flags = 0;
 	//added tid
 	thread_block->tid=*thread;
-	if (thread_block->ucs.uc_stack.ss_sp == 0) 
->>>>>>> 7dcfd0a1bdea0f39fe04e1a861a5daa24a1dd78b
-	{
+	if (thread_block->ucs.uc_stack.ss_sp == 0){
 		fprintf(stderr, "error: malloc could not allocate the stack\n");
 		return -1;
-	}
-	else 
-<<<<<<< HEAD
-	{	
-
+	} else {	
 		// makes the context via ucontext_t pointer in tcb struct
-		makecontext(thread_block->ucs, (void (*) (void))function, 0);
+		makecontext(&thread_block->ucs, (void (*) (void))function, 0);
 			
 		// so below I tried just set the attributes of the thread
 		// but I wasn't sure where to put handlers for time (25 ms quanta)
@@ -156,7 +129,7 @@ int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*func
 		thread_block->it->it_interval.tv_usec = 25000; // set the interval to 25000 us == 25ms
 		thread_block->it->it_value.tv_usec = 25000; // set the value to 25000 us (not sure if I am doing this correctly).
 		enqueueThread(runQueue, thread_block); // add the thread_block into the runQueue
-		
+		cur_thread=thread_block;
 		// calls scheduler to now do determine which thread will run and have priority
 		// if it returns -1, something wrong happened and my_pthread_create will return -1
 		// look at the scheduler() function up top to debug...
@@ -164,12 +137,7 @@ int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*func
 			fprintf(stderr, "error: error in scheduler, could not start thread\n");
 			return -1;
 		}
-		//swapcontext(thread_block->ucs, &Main);
-	}	
-
-
-=======
-	{
+		/*//swapcontext(thread_block->ucs, &Main);
 		makecontext(&thread_block->ucs, (void *) function, 0);
 		//need to add to queue here
 		
@@ -178,8 +146,7 @@ int my_pthread_create(my_pthread_t * thread, pthread_attr_t * attr, void *(*func
 		cur_thread=thread_block;
 	}
 	//dont need this--testing only
-	my_pthread_yield();
->>>>>>> 7dcfd0a1bdea0f39fe04e1a861a5daa24a1dd78b
+	my_pthread_yield();*/
 	return 0;
 };
 
