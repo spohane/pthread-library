@@ -1,16 +1,19 @@
 #include "my_pthread_t.h"
 
-void *f1(void *arg) {
 
-	printf("Hello, World!\n");
+
+void* fn() {
+
+  printf("Hello, world! We are in fn().\n");
+
 }
 
-int main(int argc, char ** argv)
-{
 
-  my_pthread_t thread;
-  my_pthread_create(&thread, NULL, f1, NULL); 
+int main(int argc, char ** argv) {
+
+  my_pthread_t tid;
+  printf("hello\n");
+  tid = my_pthread_create(&tid, NULL, fn, NULL);
 
   return 0;
-
 }

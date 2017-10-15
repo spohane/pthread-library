@@ -10,15 +10,15 @@
 
 #define _GNU_SOURCE
 #define THREAD_SIZE 65536
-#define READY 0
-#define WAIT 1
 
 /* include lib header files that you need here: */
 #include <unistd.h>
 #include <ucontext.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <stdio.h>
+#include <setjmp.h>
 #include <stdlib.h>
 #include <signal.h>
 
@@ -27,13 +27,15 @@ ucontext_t Main;
 typedef uint my_pthread_t;
 
 typedef enum State {
-	RUN, RDY, WAITING, STARTED, DONE
+	RUN, READY, WAIT, START, DONE
 } state;
 
 typedef struct threadControlBlock {
 	
 	my_pthread_t tid;
 	state status;
+	struct itimerval *it;
+	struct sigaction *act, *oact;
 	ucontext_t * ucs;
 } tcb; 
 
@@ -62,10 +64,19 @@ typedef struct threadQueue {
 void initThreadLibrary();
 
 /* scheduler */
-int scheduler(void);
+int scheduler();
+
+/* signal handler for 25ms quanta */
+void timeHandler();
 
 /* inserts tcb into the ready queue */
-void insert(tq *queue, tcb *block);
+void enqueueThread(tq *queue, tcb *block);
+
+/* removes first tcb in ready queue 
+ * returns a tqn if successful,
+ * else returns NULL 
+ */
+tqn* dequeueThread(tq *queue);
 
 /* Function Declarations: */
 
